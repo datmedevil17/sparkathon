@@ -1,7 +1,13 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: ["class"],
-  content: ["./pages/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./app/**/*.{ts,tsx}", "./src/**/*.{ts,tsx}", "*.{js,ts,jsx,tsx,mdx}"],
+  content: [
+    "./pages/**/*.{ts,tsx}",
+    "./components/**/*.{ts,tsx}",
+    "./app/**/*.{ts,tsx}",
+    "./src/**/*.{ts,tsx}",
+    "*.{js,ts,jsx,tsx,mdx}",
+  ],
   theme: {
     container: {
       center: true,
@@ -44,6 +50,22 @@ module.exports = {
         card: {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
+        },
+        // Walmart brand colors
+        walmart: {
+          blue: "#0071CE",
+          yellow: "#FFC220",
+          sky: "#A9DDF7",
+          everyday: "#4DBDF5",
+          bentonville: "#001E60",
+          lochmara: "#007DC6",
+          seagull: "#79B9E7",
+          tango: "#F47421",
+          sushi: "#76C143",
+          squeeze: "#E7F0F7",
+          selago: "#F2F8FD",
+          shaft: "#222222",
+          tundora: "#444444",
         },
       },
       borderRadius: {
