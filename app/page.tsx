@@ -1,9 +1,8 @@
-import Navbar from "./components/Navbar"
-import Hero from "./components/Hero"
-import AnimatedSection from "./components/AnimatedSection"
-import Features from "./components/Features"
-import Pricing from "./components/Pricing"
-import Footer from "./components/Footer"
+import Hero from "@/components/Hero"
+import AnimatedSection from "@/components/AnimatedSection"
+import Features from "@/components/Features"
+import Pricing from "@/components/Pricing"
+import Footer from "@/components/footer"
 
 export default function Home() {
   return (
@@ -31,7 +30,6 @@ export default function Home() {
       </div>
 
       <div className="relative z-10">
-        <Navbar />
         <Hero />
         <AnimatedSection />
         <Features />

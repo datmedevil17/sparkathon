@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Menu, X, Store } from "lucide-react"
+import Link from "next/link"
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
@@ -19,18 +20,18 @@ export default function Navbar() {
 
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center space-x-8">
-          <a href="#features" className="text-walmart-tundora hover:text-walmart-blue transition-colors">
-            Features
-          </a>
-          <a href="#pricing" className="text-walmart-tundora hover:text-walmart-blue transition-colors">
-            Pricing
-          </a>
-          <a href="#about" className="text-walmart-tundora hover:text-walmart-blue transition-colors">
-            About
-          </a>
-          <a href="#contact" className="text-walmart-tundora hover:text-walmart-blue transition-colors">
-            Contact
-          </a>
+          <Link href="/" className="text-walmart-tundora hover:text-walmart-blue transition-colors">
+            Home
+          </Link>
+          <Link href="/inventory" className="text-walmart-tundora hover:text-walmart-blue transition-colors">
+            Inventory
+          </Link>
+          <Link href="/analytics" className="text-walmart-tundora hover:text-walmart-blue transition-colors">
+            Analytics
+          </Link>
+          <Link href="/supply" className="text-walmart-tundora hover:text-walmart-blue transition-colors">
+            Supply Chain
+          </Link>
         </div>
 
         <div className="hidden md:flex items-center space-x-4">

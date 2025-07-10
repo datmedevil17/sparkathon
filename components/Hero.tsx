@@ -1,7 +1,14 @@
+"use client"
+
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { ArrowRight, Play, Zap, TrendingUp, Users } from "lucide-react"
+import { ArrowRight, Zap, TrendingUp, Users, AnchorIcon } from "lucide-react"
+import Link from "next/link"
+import StoreSetupModal from "./StoreSetupModal"
 
 export default function Hero() {
+  const [isModalOpen, setIsModalOpen] = useState(false)
+
   return (
     <section className="relative py-20 md:py-32 overflow-hidden">
       <div className="container relative z-10">
@@ -27,18 +34,21 @@ export default function Hero() {
             <Button
               size="lg"
               className="bg-walmart-blue hover:bg-walmart-lochmara text-white text-lg px-8 py-4 shadow-lg hover:shadow-xl transition-all duration-300"
+              onClick={() => setIsModalOpen(true)}
             >
               Start Your Store
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="border-walmart-blue text-walmart-blue hover:bg-walmart-squeeze text-lg px-8 py-4 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300"
-            >
-              <Play className="mr-2 h-5 w-5" />
-              Watch Demo
-            </Button>
+            <Link href="/ai-assist">
+              <Button
+                size="lg"
+                variant="outline"
+                className="border-walmart-blue text-walmart-blue hover:bg-walmart-squeeze text-lg px-8 py-4 bg-white/80 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300"
+              >
+                <AnchorIcon className="mr-2 h-5 w-5" />
+                Try AI Assistant
+              </Button>
+            </Link>
           </div>
 
           {/* Stats */}
@@ -67,6 +77,11 @@ export default function Hero() {
           </div>
         </div>
       </div>
+
+      <StoreSetupModal 
+        open={isModalOpen} 
+        onOpenChange={setIsModalOpen} 
+      />
     </section>
   )
 }
