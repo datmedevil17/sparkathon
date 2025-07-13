@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Bot, User,  ArrowRight, Store } from "lucide-react"
+import { Bot, User, ArrowRight, Store, BarChart3, Users, MapPin, TrendingUp, Package } from "lucide-react"
 import ProductTypeSelector from "./ProductTypeSelector"
 import LocationSelector from "./LocationSelector"
 import AnimatedLoader from "./AnimatedLoader"
@@ -41,6 +41,7 @@ export default function StoreSetupModal({ open, onOpenChange }: StoreSetupModalP
   const [isComplete, setIsComplete] = useState(false)
   const [isInitializing, setIsInitializing] = useState(false)
   const [showLocationInsight, setShowLocationInsight] = useState(false)
+  const [analysisPhase, setAnalysisPhase] = useState<'demographics' | 'preferences' | 'setup' | 'complete'>('demographics')
 
   useEffect(() => {
     if (open && chatMessages.length === 0) {
@@ -172,13 +173,34 @@ Here's what I've set up:
 
   const handleInitialize = () => {
     setIsInitializing(true)
+    setAnalysisPhase('demographics')
+    
+    // Phase 1: Analyzing Demographics
     setTimeout(() => {
-      addBotMessage("🎉 Congratulations! Your store has been successfully initialized. You're ready to start selling!")
-      setIsInitializing(false)
-      // Route to inventory page
-      handleClose()
-      router.push('/inventory')
+      addBotMessage("🔍 Analyzing location demographics and market potential...")
+      setAnalysisPhase('preferences')
+    }, 1000)
+
+    // Phase 2: Setting up customer preferences
+    setTimeout(() => {
+      addBotMessage("👥 Setting up store layout based on customer preferences and foot traffic patterns...")
+      setAnalysisPhase('setup')
     }, 3000)
+
+    // Phase 3: Final setup
+    setTimeout(() => {
+      addBotMessage("🏪 Initializing your store systems and inventory management...")
+      setAnalysisPhase('complete')
+    }, 5000)
+
+    // Phase 4: Complete and redirect
+    setTimeout(() => {
+      addBotMessage("✅ Store setup complete! Redirecting to your analytics dashboard...")
+      setTimeout(() => {
+        handleClose()
+        router.push('/analytics')
+      }, 2000)
+    }, 7000)
   }
 
   const resetModal = () => {
@@ -212,6 +234,24 @@ Here's what I've set up:
 
   const currentStepData = setupSteps[currentStep]
   const progress = ((currentStep + 1) / setupSteps.length) * 100
+
+  function getAnalysisIcon(): import("react").ReactNode {
+    throw new Error("Function not implemented.")
+  }
+
+  function getAnalysisText(): import("react").ReactNode {
+    throw new Error("Function not implemented.")
+  }
+
+  function getAnalysisProgress(): number {
+    switch (analysisPhase) {
+      case 'demographics': return 25;
+      case 'preferences': return 50;
+      case 'setup': return 75;
+      case 'complete': return 100;
+      default: return 0;
+    }
+  }
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -384,27 +424,94 @@ Here's what I've set up:
             </div>
           )}
 
-          {/* Initialization Button */}
+          {/* Enhanced Initialization Section */}
           {isComplete && !isInitializing && (
             <div className="p-4 border-t">
               <Button 
                 onClick={handleInitialize}
-                className="w-full bg-green-600 hover:bg-green-700 text-white"
+                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg transition-all duration-300 transform hover:scale-[1.02]"
               >
-                <Store className="mr-2 h-4 w-4" />
-                Launch Store Builder
+                <BarChart3 className="mr-2 h-4 w-4" />
+                Launch Store & View Analytics
               </Button>
             </div>
           )}
 
-          {/* Loading State */}
+          {/* Enhanced Loading State with Analysis Phases */}
           {isInitializing && (
-            <div className="p-4 border-t flex justify-center">
-              <AnimatedLoader 
-                variant="store" 
-                text="Setting up your store..." 
-                size="lg" 
-              />
+            <div className="p-6 border-t bg-gradient-to-br from-blue-50 to-purple-50">
+              <div className="space-y-4">
+                {/* Analysis Phase Header */}
+                <div className="flex items-center justify-center space-x-3">
+                  <div className="animate-pulse">
+                    {getAnalysisIcon()}
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-800">
+                    {getAnalysisText()}
+                  </h3>
+                </div>
+
+                {/* Enhanced Progress Bar */}
+                <div className="space-y-2">
+                  <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                    <div 
+                      className="h-3 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-1000 ease-out"
+                      style={{ width: `${getAnalysisProgress()}%` }}
+                    ></div>
+                  </div>
+                  <p className="text-sm text-gray-600 text-center">
+                    {getAnalysisProgress()}% Complete
+                  </p>
+                </div>
+
+                {/* Analysis Details */}
+                <div className="grid grid-cols-2 gap-4 mt-4">
+                  <div className={`p-3 rounded-lg border-2 transition-all duration-500 ${
+                    analysisPhase === 'demographics' ? 'border-blue-400 bg-blue-50' : 'border-gray-200 bg-white'
+                  }`}>
+                    <div className="flex items-center space-x-2">
+                      <MapPin className={`h-4 w-4 ${analysisPhase === 'demographics' ? 'text-blue-600' : 'text-gray-400'}`} />
+                      <span className="text-sm font-medium">Demographics</span>
+                    </div>
+                  </div>
+                  
+                  <div className={`p-3 rounded-lg border-2 transition-all duration-500 ${
+                    analysisPhase === 'preferences' ? 'border-green-400 bg-green-50' : 'border-gray-200 bg-white'
+                  }`}>
+                    <div className="flex items-center space-x-2">
+                      <Users className={`h-4 w-4 ${analysisPhase === 'preferences' ? 'text-green-600' : 'text-gray-400'}`} />
+                      <span className="text-sm font-medium">Preferences</span>
+                    </div>
+                  </div>
+                  
+                  <div className={`p-3 rounded-lg border-2 transition-all duration-500 ${
+                    analysisPhase === 'setup' ? 'border-orange-400 bg-orange-50' : 'border-gray-200 bg-white'
+                  }`}>
+                    <div className="flex items-center space-x-2">
+                      <Package className={`h-4 w-4 ${analysisPhase === 'setup' ? 'text-orange-600' : 'text-gray-400'}`} />
+                      <span className="text-sm font-medium">Store Setup</span>
+                    </div>
+                  </div>
+                  
+                  <div className={`p-3 rounded-lg border-2 transition-all duration-500 ${
+                    analysisPhase === 'complete' ? 'border-purple-400 bg-purple-50' : 'border-gray-200 bg-white'
+                  }`}>
+                    <div className="flex items-center space-x-2">
+                      <TrendingUp className={`h-4 w-4 ${analysisPhase === 'complete' ? 'text-purple-600' : 'text-gray-400'}`} />
+                      <span className="text-sm font-medium">Analytics</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Animated Loader */}
+                <div className="flex justify-center mt-4">
+                  <AnimatedLoader 
+                    variant="store" 
+                    text="" 
+                    size="lg" 
+                  />
+                </div>
+              </div>
             </div>
           )}
         </div>

@@ -23,9 +23,6 @@ export default function Navbar() {
           <Link href="/" className="text-walmart-tundora hover:text-walmart-blue transition-colors">
             Home
           </Link>
-          <Link href="/inventory" className="text-walmart-tundora hover:text-walmart-blue transition-colors">
-            Inventory
-          </Link>
           <Link href="/analytics" className="text-walmart-tundora hover:text-walmart-blue transition-colors">
             Analytics
           </Link>
