@@ -221,6 +221,51 @@ export function DragDropShipmentPlanner() {
     }
   }
 
+  const savePlan = () => {
+    const planData = {
+      timestamp: new Date().toISOString(),
+      totalShipments: shipments.length,
+      totalItemsPlanned: shipments.reduce((acc, shipment) => acc + shipment.items.length, 0),
+      shipments: shipments.map((shipment) => ({
+        name: shipment.name,
+        destination: shipment.destination,
+        capacity: shipment.capacity,
+        currentWeight: shipment.currentWeight,
+        utilization: `${((shipment.currentWeight / shipment.capacity) * 100).toFixed(1)}%`,
+        items: shipment.items.map((item) => ({
+          name: item.name,
+          quantity: item.quantity,
+          weight: item.weight,
+          totalWeight: item.weight * item.quantity,
+          priority: item.priority,
+          category: item.category,
+        })),
+      })),
+      unassignedItems: items.map((item) => ({
+        name: item.name,
+        quantity: item.quantity,
+        weight: item.weight,
+        totalWeight: item.weight * item.quantity,
+        priority: item.priority,
+        category: item.category,
+      })),
+    }
+
+    // Convert to JSON string with formatting
+    const jsonString = JSON.stringify(planData, null, 2)
+
+    // Create blob and download
+    const blob = new Blob([jsonString], { type: "application/json" })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement("a")
+    link.href = url
+    link.download = `shipment-plan-${new Date().toISOString().split("T")[0]}.json`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+  }
+
   return (
     <div className="space-y-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="flex justify-between items-center">
@@ -228,7 +273,7 @@ export function DragDropShipmentPlanner() {
           <h2 className="text-2xl font-bold">Shipment Planning</h2>
           <p className="text-muted-foreground">Drag and drop items to plan your next shipments</p>
         </div>
-        <Button>
+        <Button onClick={savePlan}>
           <Save className="h-4 w-4 mr-2" />
           Save Plan
         </Button>

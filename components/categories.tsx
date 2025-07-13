@@ -12,18 +12,15 @@ import {
   TrendingUp,
   Search,
   Filter,
-  Apple,
-  Shirt,
-  Home,
-  Gamepad2,
-  Pill,
-  Car,
   Plus,
   MoreHorizontal,
   Eye,
   Edit,
   BarChart3,
+  Download, // Add this import
 } from "lucide-react"
+import { categories, subcategoryDetails } from "@/data/categories"
+import geminiApiRequest from "@/services/geminiApiRequest"
 
 interface CategoriesPageProps {
   onViewDetailedAnalytics?: () => void
@@ -31,6 +28,8 @@ interface CategoriesPageProps {
 
 export default function CategoriesPage({ onViewDetailedAnalytics }: CategoriesPageProps) {
   const [selectedCategory, setSelectedCategory] = useState<(typeof categories)[0] | null>(null)
+  const [showAIChat, setShowAIChat] = useState(false)
+  const [isGeneratingReport, setIsGeneratingReport] = useState(false) // Add this state
   const router = useRouter()
 
   const handleViewDetailedAnalytics = () => {
@@ -41,90 +40,103 @@ export default function CategoriesPage({ onViewDetailedAnalytics }: CategoriesPa
     }
   }
 
-  const categories = [
-    {
-      id: "grocery",
-      name: "Grocery & Food",
-      icon: Apple,
-      totalProducts: 4250,
-      totalValue: "$850K",
-      monthlyGrowth: "+8.5%",
-      topSubcategories: ["Fresh Produce", "Dairy", "Meat & Seafood", "Pantry Staples"],
-      performance: "excellent",
-      color: "bg-emerald-50 text-emerald-700 border-emerald-200",
-      iconColor: "bg-emerald-100 text-emerald-600",
-    },
-    {
-      id: "clothing",
-      name: "Clothing & Apparel",
-      icon: Shirt,
-      totalProducts: 2100,
-      totalValue: "$420K",
-      monthlyGrowth: "+12.3%",
-      topSubcategories: ["Men's Clothing", "Women's Clothing", "Kids & Baby", "Shoes"],
-      performance: "excellent",
-      color: "bg-purple-50 text-purple-700 border-purple-200",
-      iconColor: "bg-purple-100 text-purple-600",
-    },
-    {
-      id: "home",
-      name: "Home & Garden",
-      icon: Home,
-      totalProducts: 1850,
-      totalValue: "$380K",
-      monthlyGrowth: "+5.7%",
-      topSubcategories: ["Furniture", "Home Decor", "Kitchen", "Garden & Patio"],
-      performance: "good",
-      color: "bg-blue-50 text-blue-700 border-blue-200",
-      iconColor: "bg-blue-100 text-blue-600",
-    },
-    {
-      id: "electronics",
-      name: "Electronics",
-      icon: Gamepad2,
-      totalProducts: 890,
-      totalValue: "$650K",
-      monthlyGrowth: "+15.2%",
-      topSubcategories: ["Mobile Phones", "Computers", "TV & Audio", "Gaming"],
-      performance: "excellent",
-      color: "bg-indigo-50 text-indigo-700 border-indigo-200",
-      iconColor: "bg-indigo-100 text-indigo-600",
-    },
-    {
-      id: "health",
-      name: "Health & Wellness",
-      icon: Pill,
-      totalProducts: 1200,
-      totalValue: "$290K",
-      monthlyGrowth: "+6.8%",
-      topSubcategories: ["Pharmacy", "Personal Care", "Vitamins", "First Aid"],
-      performance: "good",
-      color: "bg-rose-50 text-rose-700 border-rose-200",
-      iconColor: "bg-rose-100 text-rose-600",
-    },
-    {
-      id: "automotive",
-      name: "Automotive",
-      icon: Car,
-      totalProducts: 650,
-      totalValue: "$180K",
-      monthlyGrowth: "+3.4%",
-      topSubcategories: ["Car Care", "Tools", "Accessories", "Tires & Wheels"],
-      performance: "average",
-      color: "bg-slate-50 text-slate-700 border-slate-200",
-      iconColor: "bg-slate-100 text-slate-600",
-    },
-  ]
+  // Add this function for generating PDF reports
+  const generateAnalyticsReport = async () => {
+    setIsGeneratingReport(true)
+    
+    try {
+      // Prepare data for Gemini API
+      const categoryData = categories.map(cat => ({
+        name: cat.name,
+        totalProducts: cat.totalProducts,
+        totalValue: cat.totalValue,
+        monthlyGrowth: cat.monthlyGrowth,
+        performance: cat.performance,
+        topSubcategories: cat.topSubcategories
+      }))
 
-  const subcategoryDetails = {
-    grocery: [
-      { name: "Fresh Produce", products: 450, value: "$125K", trend: "+12%", margin: "35%" },
-      { name: "Dairy Products", products: 280, value: "$95K", trend: "+8%", margin: "22%" },
-      { name: "Meat & Seafood", products: 320, value: "$180K", trend: "+15%", margin: "18%" },
-      { name: "Pantry Staples", products: 890, value: "$220K", trend: "+5%", margin: "28%" },
-      { name: "Frozen Foods", products: 340, value: "$85K", trend: "+7%", margin: "25%" },
-      { name: "Beverages", products: 520, value: "$145K", trend: "+10%", margin: "30%" },
-    ],
+      const prompt = `
+        Generate a comprehensive analytics report based on the following category data:
+        ${JSON.stringify(categoryData, null, 2)}
+
+        Please create a detailed report that includes:
+        1. Executive Summary
+        2. Category Performance Analysis
+        3. Growth Trends and Insights
+        4. Top Performing Categories
+        5. Areas for Improvement
+        6. Strategic Recommendations
+        7. Future Outlook
+
+        Format the response as a structured report with clear sections and professional language suitable for business stakeholders.
+      `
+
+      const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY
+      if (!apiKey) throw new Error('API key is not configured')
+      const response = await geminiApiRequest({ prompt, apiKey })
+      
+      // Generate PDF from the AI response
+      await downloadReportAsPDF(response)
+      
+    } catch (error) {
+      console.error('Error generating report:', error)
+      alert('Failed to generate report. Please try again.')
+    } finally {
+      setIsGeneratingReport(false)
+    }
+  }
+
+  // Function to convert AI response to PDF
+const downloadReportAsPDF = async (reportContent: string, fileNamePrefix = 'analytics-report') => {
+ 
+};
+
+  // Add this function after generateAnalyticsReport
+  const generateCategoryReport = async (category: typeof categories[0]) => {
+    setIsGeneratingReport(true)
+    
+    try {
+      const subcategories = category.id === 'grocery' ? subcategoryDetails.grocery : []
+      
+      const prompt = `
+        Generate a detailed analytics report for the "${category.name}" category with the following data:
+        
+        Category Overview:
+        - Total Products: ${category.totalProducts}
+        - Total Value: ${category.totalValue}
+        - Monthly Growth: ${category.monthlyGrowth}
+        - Performance Level: ${category.performance}
+        - Top Subcategories: ${category.topSubcategories.join(', ')}
+        
+        ${subcategories.length > 0 ? `
+        Subcategory Details:
+        ${subcategories.map(sub => `
+        - ${sub.name}: ${sub.products} products, ${sub.value} value, ${sub.trend} trend, ${sub.margin} margin
+        `).join('')}
+        ` : ''}
+        
+        Please provide:
+        1. Category Performance Summary
+        2. Strengths and Opportunities
+        3. Subcategory Analysis (if available)
+        4. Growth Predictions
+        5. Strategic Recommendations
+        6. Action Items
+        
+        Format as a professional business report.
+      `
+
+      const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY
+      if (!apiKey) throw new Error('API key is not configured')
+      const response = await geminiApiRequest({ prompt, apiKey })
+      await downloadReportAsPDF(response, `${category.name.toLowerCase().replace(/\s+/g, '-')}-report`)
+      
+    } catch (error) {
+      console.error('Error generating category report:', error)
+      alert('Failed to generate category report. Please try again.')
+    } finally {
+      setIsGeneratingReport(false)
+    }
   }
 
   return (
@@ -143,6 +155,24 @@ export default function CategoriesPage({ onViewDetailedAnalytics }: CategoriesPa
           <Button variant="outline" className="bg-white border-slate-300 text-slate-700 hover:bg-slate-50">
             <BarChart3 className="w-4 h-4 mr-2" />
             Analytics
+          </Button>
+          <Button 
+            onClick={generateAnalyticsReport}
+            disabled={isGeneratingReport}
+            variant="outline" 
+            className="bg-white border-slate-300 text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+          >
+            {isGeneratingReport ? (
+      <>
+        <div className="w-4 h-4 mr-2 animate-spin rounded-full border-2 border-slate-300 border-t-slate-600" />
+        Generating...
+      </>
+    ) : (
+      <>
+        <Download className="w-4 h-4 mr-2" />
+        Download Report
+      </>
+    )}
           </Button>
           <Button className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm">
             <Plus className="w-4 h-4 mr-2" />
@@ -192,6 +222,17 @@ export default function CategoriesPage({ onViewDetailedAnalytics }: CategoriesPa
                   <Badge className={`${category.color} border-0 shadow-sm font-medium px-3 py-1`}>
                     {category.monthlyGrowth}
                   </Badge>
+                  {category.aiInsight && (
+                    <div className="relative group">
+                      <div className="w-5 h-5 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center cursor-help">
+                        <span className="text-white text-xs font-bold">AI</span>
+                      </div>
+                      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-slate-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-20">
+                        {category.aiInsight}
+                        <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-l-4 border-r-4 border-t-4 border-transparent border-t-slate-900"></div>
+                      </div>
+                    </div>
+                  )}
                   <Button 
                     variant="ghost" 
                     size="icon" 
@@ -242,6 +283,26 @@ export default function CategoriesPage({ onViewDetailedAnalytics }: CategoriesPa
                     </div>
                   ))}
                 </div>
+              </div>
+
+              <div className="space-y-2">
+                <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">30-Day Forecast</p>
+                <div className="flex items-end space-x-1 h-8">
+                  {category.forecastData?.map((value, index) => (
+                    <div
+                      key={index}
+                      className="bg-gradient-to-t from-blue-500 to-blue-400 rounded-sm opacity-70"
+                      style={{ 
+                        width: '4px', 
+                        height: `${(value / Math.max(...category.forecastData)) * 100}%`,
+                        minHeight: '2px'
+                      }}
+                    />
+                  ))}
+                </div>
+                <p className="text-xs text-slate-600">
+                  Predicted growth: <span className="font-semibold text-emerald-600">+{category.predictedGrowth}</span>
+                </p>
               </div>
 
               <div className="pt-4 border-t border-slate-100">
@@ -390,6 +451,14 @@ export default function CategoriesPage({ onViewDetailedAnalytics }: CategoriesPa
                   <Eye className="w-4 h-4 mr-2" />
                   View All Products
                 </Button>
+                <Button 
+                  onClick={() => generateCategoryReport(selectedCategory)}
+                  variant="outline" 
+                  className="border-slate-300 text-slate-700 hover:bg-slate-50 bg-transparent"
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Download Report
+                </Button>
                 <Button variant="outline" className="border-slate-300 text-slate-700 hover:bg-slate-50 bg-transparent">
                   <BarChart3 className="w-4 h-4 mr-2" />
                   Analytics Report
@@ -403,6 +472,61 @@ export default function CategoriesPage({ onViewDetailedAnalytics }: CategoriesPa
           </Card>
         </div>
       )}
+
+      {/* AI Chat Interface */}
+      {showAIChat && (
+        <div className="fixed bottom-20 right-6 w-80 h-96 bg-white rounded-2xl shadow-2xl border border-slate-200 z-50 flex flex-col">
+          <div className="p-4 border-b border-slate-200 flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
+                <span className="text-white text-sm font-bold">AI</span>
+              </div>
+              <span className="font-semibold text-slate-900">Analytics Assistant</span>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setShowAIChat(false)}
+              className="text-slate-400 hover:text-slate-600"
+            >
+              ✕
+            </Button>
+          </div>
+          <div className="flex-1 p-4 overflow-y-auto">
+            <div className="space-y-3">
+              <div className="bg-slate-100 rounded-lg p-3 text-sm">
+                <p className="text-slate-700">Ask me anything about your categories:</p>
+                <ul className="mt-2 text-xs text-slate-600 space-y-1">
+                  <li>• "Which category has the highest growth?"</li>
+                  <li>• "Show me underperforming subcategories"</li>
+                  <li>• "Predict next month's trends"</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div className="p-4 border-t border-slate-200">
+            <div className="flex space-x-2">
+              <Input
+                placeholder="Ask about your categories..."
+                className="flex-1 text-sm border-slate-300 focus:border-blue-500"
+              />
+              <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
+                <Search className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Floating AI Chat Button */}
+      <Button
+        onClick={() => setShowAIChat(!showAIChat)}
+        className="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 shadow-2xl z-40 flex items-center justify-center"
+      >
+        <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center">
+          <span className="text-purple-600 text-sm font-bold">AI</span>
+        </div>
+      </Button>
     </div>
   )
 }

@@ -1,5 +1,6 @@
 "use client"
 
+import { useState, useMemo } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -21,7 +22,19 @@ import {
   Plus,
   Settings,
   Bell,
+  FileSpreadsheet,
+  FileText,
+  Sparkles,
 } from "lucide-react"
+import { topProducts, lowStockItems, Product } from "@/data/products"
+import { searchProducts, exportToExcel, exportToPDF } from "@/utils/inventoryUtils"
+import AISuggestionsModal from "./AISuggestionsModal"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 interface InventoryOverviewPageProps {
   onViewDetailedAnalytics?: () => void
@@ -29,6 +42,13 @@ interface InventoryOverviewPageProps {
 
 export default function InventoryOverviewPage({ onViewDetailedAnalytics }: InventoryOverviewPageProps) {
   const router = useRouter()
+  const [searchTerm, setSearchTerm] = useState("")
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
+  const [showAISuggestions, setShowAISuggestions] = useState(false)
+
+  const filteredProducts = useMemo(() => {
+    return searchProducts(topProducts, searchTerm)
+  }, [searchTerm])
 
   const handleViewDetailedAnalytics = () => {
     if (onViewDetailedAnalytics) {
@@ -38,63 +58,23 @@ export default function InventoryOverviewPage({ onViewDetailedAnalytics }: Inven
     }
   }
 
-  const topProducts = [
-    {
-      id: "WM-001",
-      name: "Great Value Whole Milk",
-      category: "Dairy",
-      stock: 245,
-      sold: 1250,
-      revenue: "$3,125",
-      trend: "up",
-      margin: "22%",
-      image: "/placeholder.svg?height=48&width=48",
-      stockStatus: "in-stock"
-    },
-    {
-      id: "WM-002",
-      name: "Bananas (per lb)",
-      category: "Produce",
-      stock: 89,
-      sold: 2100,
-      revenue: "$1,260",
-      trend: "up",
-      margin: "34%",
-      image: "/placeholder.svg?height=48&width=48",
-      stockStatus: "low-stock"
-    },
-    {
-      id: "WM-003",
-      name: "Wonder Bread",
-      category: "Bakery",
-      stock: 156,
-      sold: 890,
-      revenue: "$2,670",
-      trend: "down",
-      margin: "18%",
-      image: "/placeholder.svg?height=48&width=48",
-      stockStatus: "in-stock"
-    },
-    {
-      id: "WM-004",
-      name: "Tide Laundry Detergent",
-      category: "Household",
-      stock: 67,
-      sold: 340,
-      revenue: "$4,080",
-      trend: "up",
-      margin: "28%",
-      image: "/placeholder.svg?height=48&width=48",
-      stockStatus: "low-stock"
-    },
-  ]
+  const handleExport = (format: 'excel' | 'pdf') => {
+    const timestamp = new Date().toISOString().split('T')[0]
+    const filename = `inventory_report_${timestamp}`
+    
+    if (format === 'excel') {
+      exportToExcel(filteredProducts, filename)
+    } else {
+      exportToPDF(filteredProducts, filename)
+    }
+  }
 
-  const lowStockItems = [
-    { name: "Coca-Cola 12-pack", stock: 12, reorderLevel: 50, category: "Beverages", urgency: "high" },
-    { name: "iPhone Charger Cable", stock: 8, reorderLevel: 25, category: "Electronics", urgency: "critical" },
-    { name: "Advil Pain Reliever", stock: 15, reorderLevel: 40, category: "Pharmacy", urgency: "medium" },
-    { name: "Frozen Pizza", stock: 18, reorderLevel: 35, category: "Frozen Foods", urgency: "medium" },
-  ]
+  const handleProductClick = (product: any) => {
+    if (product.trend === 'down') {
+      setSelectedProduct(product)
+      setShowAISuggestions(true)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50">
@@ -124,10 +104,24 @@ export default function InventoryOverviewPage({ onViewDetailedAnalytics }: Inven
                 <Filter className="w-4 h-4 mr-2" />
                 Filter
               </Button>
-              <Button variant="outline" size="sm" className="bg-white border-slate-300 text-slate-700 hover:bg-slate-50">
-                <Download className="w-4 h-4 mr-2" />
-                Export
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="bg-white border-slate-300 text-slate-700 hover:bg-slate-50">
+                    <Download className="w-4 h-4 mr-2" />
+                    Export
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem onClick={() => handleExport('excel')}>
+                    <FileSpreadsheet className="w-4 h-4 mr-2" />
+                    Export as Excel
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleExport('pdf')}>
+                    <FileText className="w-4 h-4 mr-2" />
+                    Export as PDF
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
               <Button size="sm" className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-sm">
                 <Plus className="w-4 h-4 mr-2" />
                 Add Product
@@ -143,7 +137,7 @@ export default function InventoryOverviewPage({ onViewDetailedAnalytics }: Inven
               <div className="flex items-center justify-between">
                 <div className="space-y-2">
                   <p className="text-sm font-medium text-slate-600">Total Products</p>
-                  <p className="text-2xl lg:text-3xl font-bold text-slate-900">12,847</p>
+                  <p className="text-2xl lg:text-3xl font-bold text-slate-900">{topProducts.length}</p>
                   <div className="flex items-center space-x-1">
                     <TrendingUp className="w-4 h-4 text-emerald-600" />
                     <span className="text-sm text-emerald-600 font-medium">+2.5%</span>
@@ -224,6 +218,8 @@ export default function InventoryOverviewPage({ onViewDetailedAnalytics }: Inven
                 <Input
                   placeholder="Search products by name, SKU, category, or supplier..."
                   className="pl-10 h-12 border-slate-300 focus:border-blue-500 focus:ring-blue-500 bg-slate-50 rounded-xl text-sm"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
               <div className="flex gap-2">
@@ -231,10 +227,24 @@ export default function InventoryOverviewPage({ onViewDetailedAnalytics }: Inven
                   <Filter className="w-4 h-4 mr-2" />
                   <span className="hidden sm:inline">Advanced Filter</span>
                 </Button>
-                <Button variant="outline" className="bg-white border-slate-300 text-slate-700 hover:bg-slate-50 h-12 px-4">
-                  <Download className="w-4 h-4 mr-2" />
-                  <span className="hidden sm:inline">Export</span>
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="bg-white border-slate-300 text-slate-700 hover:bg-slate-50 h-12 px-4">
+                      <Download className="w-4 h-4 mr-2" />
+                      <span className="hidden sm:inline">Export</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem onClick={() => handleExport('excel')}>
+                      <FileSpreadsheet className="w-4 h-4 mr-2" />
+                      Export as Excel
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleExport('pdf')}>
+                      <FileText className="w-4 h-4 mr-2" />
+                      Export as PDF
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
                 <Button variant="outline" className="bg-white border-slate-300 text-slate-700 hover:bg-slate-50 h-12 px-4">
                   <Settings className="w-4 h-4" />
                 </Button>
@@ -251,6 +261,11 @@ export default function InventoryOverviewPage({ onViewDetailedAnalytics }: Inven
                 <CardTitle className="text-xl font-semibold text-slate-900 flex items-center gap-2">
                   <BarChart3 className="w-5 h-5 text-blue-600" />
                   Top Performing Products
+                  {searchTerm && (
+                    <Badge variant="outline" className="ml-2">
+                      {filteredProducts.length} results
+                    </Badge>
+                  )}
                 </CardTitle>
                 <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700 hover:bg-blue-50">
                   <Eye className="w-4 h-4 mr-1" />
@@ -259,15 +274,20 @@ export default function InventoryOverviewPage({ onViewDetailedAnalytics }: Inven
               </div>
             </CardHeader>
             <CardContent className="space-y-3 p-6">
-              {topProducts.map((product, index) => (
+              {filteredProducts.map((product, index) => (
                 <div
                   key={product.id}
-                  className="flex items-center justify-between p-4 bg-gradient-to-r from-slate-50 to-white rounded-xl hover:from-blue-50 hover:to-white transition-all duration-200 border border-transparent hover:border-blue-200 group cursor-pointer"
+                  className={`flex items-center justify-between p-4 bg-gradient-to-r from-slate-50 to-white rounded-xl transition-all duration-200 border border-transparent group cursor-pointer ${
+                    product.trend === 'down' 
+                      ? 'hover:from-red-50 hover:to-white hover:border-red-200' 
+                      : 'hover:from-blue-50 hover:to-white hover:border-blue-200'
+                  }`}
+                  onClick={() => handleProductClick(product)}
                 >
                   <div className="flex items-center gap-4">
                     <div className="relative">
                       <img
-                        src={product.image || "/placeholder.svg"}
+                        src={product.image}
                         alt={product.name}
                         className="w-12 h-12 rounded-xl object-cover bg-white border border-slate-200 group-hover:shadow-md transition-shadow"
                       />
@@ -285,6 +305,12 @@ export default function InventoryOverviewPage({ onViewDetailedAnalytics }: Inven
                           {product.category}
                         </Badge>
                         <span className="text-xs text-slate-500">SKU: {product.id}</span>
+                        {product.trend === 'down' && (
+                          <Badge variant="outline" className="bg-red-50 text-red-700 border-red-300 text-xs">
+                            <Sparkles className="w-3 h-3 mr-1" />
+                            AI Help
+                          </Badge>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -453,6 +479,15 @@ export default function InventoryOverviewPage({ onViewDetailedAnalytics }: Inven
             </div>
           </CardContent>
         </Card>
+
+        {/* AI Suggestions Modal */}
+        {selectedProduct && (
+          <AISuggestionsModal
+            isOpen={showAISuggestions}
+            onClose={() => setShowAISuggestions(false)}
+            product={selectedProduct}
+          />
+        )}
       </div>
     </div>
   )
